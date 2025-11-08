@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
                         composable("inicio") { InicioScreen(navController) }
                         composable("login") { LoginScreen(navController) }
                         composable("register") { RegisterScreen(navController) }
+                        composable ( "dashboard") {DashboardScreen(navController)}
                     }
                 }
             }

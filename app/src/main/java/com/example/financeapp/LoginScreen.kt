@@ -71,7 +71,7 @@ fun LoginScreen(navController: NavController) {
 
         // Botón de inicio de sesión
         Button(
-            onClick = { /* TODO: lógica de login */ },
+            onClick = { navController.navigate("dashboard") },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
