@@ -96,7 +96,7 @@ fun DashboardScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            onClick = { /* Acción Ingresos */ },
+                            onClick = {navController.navigate("ingresos") },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)), // Verde
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
@@ -109,7 +109,7 @@ fun DashboardScreen(navController: NavController) {
                         }
 
                         Button(
-                            onClick = { /* Acción Gastos */ },
+                            onClick = { navController.navigate("gastos") },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)), // Rojo
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
@@ -125,7 +125,7 @@ fun DashboardScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { /* Acción Movimientos */ },
+                        onClick = { navController.navigate("movimiento")},
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF001DFF)), // Azul fuerte
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
