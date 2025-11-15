@@ -14,23 +14,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.example.financeapp.data.model.Usuario
 
 @Composable
 fun PerfilScreen(navController: NavController) {
-
-    // Variables de estado para los campos
     var nombre by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }
 
-    // Fondo general
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val database = FirebaseDatabase.getInstance().getReference("usuarios")
+
+    LaunchedEffect(uid) {
+        uid?.let {
+            database.child(it).get().addOnSuccessListener { snapshot ->
+                val usuario = snapshot.getValue(Usuario::class.java)
+                usuario?.let {
+                    nombre = it.nombre
+                    apellido = it.apellido
+                    correo = it.correo
+                }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        // 🔹 Botón de "Cerrar sesión"
         Text(
             text = "Cerrar sesión",
             color = Color.Red,
@@ -40,13 +55,13 @@ fun PerfilScreen(navController: NavController) {
                 .align(Alignment.TopEnd)
                 .padding(top = 50.dp, end = 20.dp)
                 .clickable {
-                    // Navega al login
+                    FirebaseAuth.getInstance().signOut()
                     navController.navigate("login") {
                         popUpTo("perfil") { inclusive = true }
                     }
                 }
         )
-        // Tarjeta central
+
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -62,8 +77,6 @@ fun PerfilScreen(navController: NavController) {
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-                // Título
                 Text(
                     text = "PERFIL",
                     fontSize = 22.sp,
@@ -74,40 +87,21 @@ fun PerfilScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo nombre
-                Text(text = "nombre:", fontWeight = FontWeight.Bold)
-                OutlinedTextField(
-                    value = nombre,
-                    onValueChange = { nombre = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                Text(text = "Nombre:", fontWeight = FontWeight.Bold)
+                OutlinedTextField(value = nombre, onValueChange = {}, modifier = Modifier.fillMaxWidth(), singleLine = true)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo apellido
                 Text(text = "Apellido:", fontWeight = FontWeight.Bold)
-                OutlinedTextField(
-                    value = apellido,
-                    onValueChange = { apellido = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                OutlinedTextField(value = apellido, onValueChange = {}, modifier = Modifier.fillMaxWidth(), singleLine = true)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo correo
                 Text(text = "Correo:", fontWeight = FontWeight.Bold)
-                OutlinedTextField(
-                    value = correo,
-                    onValueChange = { correo = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                OutlinedTextField(value = correo, onValueChange = {}, modifier = Modifier.fillMaxWidth(), singleLine = true)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Botón Volver (Azul)
                 Button(
                     onClick = { navController.popBackStack() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF001DFF)),
@@ -116,11 +110,7 @@ fun PerfilScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(45.dp)
                 ) {
-                    Text(
-                        "Volver",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Volver", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

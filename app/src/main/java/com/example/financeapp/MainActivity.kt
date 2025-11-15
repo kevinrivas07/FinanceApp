@@ -12,11 +12,13 @@ import com.example.financeapp.InicioScreen
 import com.example.financeapp.LoginScreen
 import com.example.financeapp.RegisterScreen
 import com.example.financeapp.ui.theme.FinanceAppTheme
+import com.google.firebase.FirebaseApp
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         setContent {
             FinanceAppTheme {
                 val navController = rememberNavController()

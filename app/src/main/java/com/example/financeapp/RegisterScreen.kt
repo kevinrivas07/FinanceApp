@@ -10,22 +10,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.navigation.NavHostController
+import com.example.financeapp.viewmodel.AuthViewModel
+import kotlinx.coroutines.delay
+import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(
+    navController: NavHostController,
+    viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
     var nombre by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }
     var fechaNacimiento by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isSuccess by viewModel.isSuccess.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    val scope = rememberCoroutineScope()
+
+   // LaunchedEffect(isSuccess) {
+    //    if (isSuccess) {
+       //     delay(800)
+        //    navController.navigate("login") {
+            //    popUpTo("register") { inclusive = true }
+         //   }
+       // }
+   // }
 
     Column(
         modifier = Modifier
@@ -63,47 +78,68 @@ fun RegisterScreen(navController: NavController) {
 
         Button(
             onClick = {
-                if (nombre.isNotEmpty() && correo.isNotEmpty()) {
-                    val json = """
-                        {
-                          "nombre": "$nombre",
-                          "apellido": "$apellido",
-                          "fechaNacimiento": "$fechaNacimiento",
-                          "correo": "$correo",
-                          "contrasena": "$contrasena"
-                        }
-                    """.trimIndent()
-
-                    val client = OkHttpClient()
-                    val mediaType = "application/json; charset=utf-8".toMediaType()
-                    val body = json.toRequestBody(mediaType)
-
-                    val request = Request.Builder()
-                        .url("http://10.0.2.2:3000/users")
-                        .post(body)
-                        .build()
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val response = client.newCall(request).execute()
-                            println("Respuesta: ${response.body?.string()}")
-                        } catch (e: Exception) {
-                            println("Error: ${e.message}")
-                        }
+                if (nombre.isNotBlank() && apellido.isNotBlank() &&
+                    fechaNacimiento.isNotBlank() && correo.isNotBlank() && contrasena.isNotBlank()
+                ) {
+                    scope.launch {
+                        viewModel.register(nombre, apellido, fechaNacimiento, correo, contrasena)
                     }
                 }
             },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(50.dp),
+            enabled = !isLoading
         ) {
-            Text("Registrarse")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(22.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Registrarse")
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Row {  Text("¿Ya tienes una cuenta? ")
+        error?.let {
+            Text(
+                text = "Error: $it",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp
+            )
+        }
+
+        if (isSuccess) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Registro exitoso 🎉",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Te hemos enviado un correo de verificación.\nPor favor revísalo y haz clic en el enlace para activar tu cuenta.",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Una vez verificado, podrás iniciar sesión con éxito.",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row {
+            Text("¿Ya tienes una cuenta? ")
             Text(
                 text = "Inicia sesión aquí",
                 color = MaterialTheme.colorScheme.primary,
@@ -112,7 +148,10 @@ fun RegisterScreen(navController: NavController) {
             )
         }
 
-        Row { Text("¿Volver a la página principal? ")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row {
+            Text("¿Volver a la página principal? ")
             Text(
                 text = "Inicio",
                 color = MaterialTheme.colorScheme.primary,

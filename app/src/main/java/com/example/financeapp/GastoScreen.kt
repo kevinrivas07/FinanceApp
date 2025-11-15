@@ -1,5 +1,6 @@
 package com.example.financeapp
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,28 +9,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.example.financeapp.data.model.Gasto
 
 @Composable
 fun GastoScreen(navController: NavController) {
 
-    // Variables de estado para los campos
     var valor by remember { mutableStateOf("") }
     var fecha by remember { mutableStateOf("") }
     var observacion by remember { mutableStateOf("") }
 
-    // Fondo general
+    val context = LocalContext.current
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val database = FirebaseDatabase.getInstance().getReference("gastos")
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        // Tarjeta central
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -45,8 +51,6 @@ fun GastoScreen(navController: NavController) {
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-                // Título
                 Text(
                     text = "GASTOS",
                     fontSize = 22.sp,
@@ -57,7 +61,6 @@ fun GastoScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo Valor
                 Text(text = "Valor:", fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = valor,
@@ -68,7 +71,6 @@ fun GastoScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo Fecha
                 Text(text = "Fecha:", fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = fecha,
@@ -79,7 +81,6 @@ fun GastoScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo Observación
                 Text(text = "Observación:", fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = observacion,
@@ -91,25 +92,38 @@ fun GastoScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón Registrar (Verde)
                 Button(
-                    onClick = { /* TODO: Acción de registro */ },
+                    onClick = {
+                        if (valor.isNotBlank() && fecha.isNotBlank()) {
+                            val gasto = Gasto(valor, fecha, observacion)
+                            uid?.let {
+                                val gastoId = database.child(it).push().key ?: return@let
+                                database.child(it).child(gastoId).setValue(gasto)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Gasto registrado ✅", Toast.LENGTH_SHORT).show()
+                                        valor = ""
+                                        fecha = ""
+                                        observacion = ""
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                        } else {
+                            Toast.makeText(context, "Completa los campos obligatorios", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0101)),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(45.dp)
                 ) {
-                    Text(
-                        "Registrar",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Registrar", color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Botón Volver (Azul)
                 Button(
                     onClick = { navController.popBackStack() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF001DFF)),
@@ -118,11 +132,7 @@ fun GastoScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(45.dp)
                 ) {
-                    Text(
-                        "Volver",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Volver", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

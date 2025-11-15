@@ -19,20 +19,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.runtime.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 @Composable
 fun DashboardScreen(navController: NavController) {
-    // Fondo general color celeste
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val ingresosRef = FirebaseDatabase.getInstance().getReference("ingresos")
+    val gastosRef = FirebaseDatabase.getInstance().getReference("gastos")
+
+    var totalIngresos by remember { mutableStateOf(0L) }
+    var totalGastos by remember { mutableStateOf(0L) }
+
+    // Cargar ingresos y gastos
+    LaunchedEffect(uid) {
+        uid?.let {
+            ingresosRef.child(it).get().addOnSuccessListener { snapshot ->
+                val suma = snapshot.children.sumOf { ingreso ->
+                    ingreso.child("valor").getValue(String::class.java)?.toLongOrNull() ?: 0L
+                }
+                totalIngresos = suma
+            }
+
+            gastosRef.child(it).get().addOnSuccessListener { snapshot ->
+                val suma = snapshot.children.sumOf { gasto ->
+                    gasto.child("valor").getValue(String::class.java)?.toLongOrNull() ?: 0L
+                }
+                totalGastos = suma
+            }
+        }
+    }
+
+    val saldoDisponible = totalIngresos - totalGastos
+
+    // UI
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFD3EAFB)), // Fondo azul claro
+            .background(Color(0xFFD3EAFB)),
         contentAlignment = Alignment.Center
     ) {
-        // Tarjeta central
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F3FA)), // Fondo de la tarjeta
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F3FA)),
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(0.9f)
@@ -40,24 +70,18 @@ fun DashboardScreen(navController: NavController) {
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                // Botón circular superior derecho (perfil)
                 Box(
                     modifier = Modifier
                         .size(40.dp)
                         .align(Alignment.TopEnd)
                         .background(Color(0xFFE0E0E0), CircleShape)
-                        .clickable { navController.navigate("perfil") } // 🔹 Navega a la pantalla de perfil
+                        .clickable { navController.navigate("perfil") }
                         .padding(8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "P",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+                    Text("P", fontWeight = FontWeight.Bold, color = Color.Black)
                 }
 
-                // Contenido central
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -75,7 +99,7 @@ fun DashboardScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "$ 500.000",
+                        text = "$ ${saldoDisponible}",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -90,53 +114,40 @@ fun DashboardScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // Botones
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            onClick = {navController.navigate("ingresos") },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)), // Verde
+                            onClick = { navController.navigate("ingresos") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(
-                                "INGRESOS",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("INGRESOS", fontWeight = FontWeight.Bold, color = Color.White)
                         }
 
                         Button(
                             onClick = { navController.navigate("gastos") },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)), // Rojo
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(
-                                "GASTOS",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("GASTOS", fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { navController.navigate("movimiento")},
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF001DFF)), // Azul fuerte
+                        onClick = { navController.navigate("movimiento") },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF001DFF)),
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
                     ) {
-                        Text(
-                            "MOVIMIENTOS",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Text("MOVIMIENTOS", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }

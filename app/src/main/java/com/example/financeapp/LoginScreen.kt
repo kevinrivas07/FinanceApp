@@ -15,13 +15,24 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.financeapp.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavHostController,
+    viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
     var usuario by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isSuccess by viewModel.isSuccess.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -30,7 +41,6 @@ fun LoginScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Título principal
         Text(
             text = "INICIO DE SESIÓN",
             fontSize = 24.sp,
@@ -40,17 +50,15 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Campo Usuario
         OutlinedTextField(
             value = usuario,
             onValueChange = { usuario = it },
-            label = { Text("Usuario") },
+            label = { Text("Correo electrónico") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo Contraseña con ícono mostrar/ocultar
         OutlinedTextField(
             value = contrasena,
             onValueChange = { contrasena = it },
@@ -69,15 +77,54 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón de inicio de sesión
         Button(
-            onClick = { navController.navigate("dashboard") },
+            onClick = {
+                if (usuario.isNotBlank() && contrasena.isNotBlank()) {
+                    scope.launch {
+                        viewModel.login(usuario, contrasena) { correoVerificado ->
+                            if (correoVerificado) {
+                                navController.navigate("dashboard") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(50.dp),
+            enabled = !isLoading
         ) {
-            Text("Iniciar Sesión")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(22.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Iniciar Sesión")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        error?.let {
+            Text(
+                text = "Error: $it",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp
+            )
+        }
+
+        if (isSuccess) {
+            Text(
+                text = "Sesión iniciada correctamente 🎉",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -91,6 +138,5 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.clickable { navController.navigate("register") }
             )
         }
-
     }
 }
