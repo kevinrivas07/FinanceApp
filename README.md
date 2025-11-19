@@ -21,7 +21,7 @@ Almacenamiento de datos en Firebase, lo que garantiza seguridad y disponibilidad
 
 Interfaz moderna y reactiva construida con Jetpack Compose.
 
- Equipo de desarrollo
+ Equipo de trabajo 
 Kevin Rivas	
 Tatiana Montoya	
 Juan Granja	
@@ -41,16 +41,12 @@ Visualizar todos los movimientos financieros almacenados en Firebase.
 
 Eliminar registros que el usuario ya no desee mantener.
 
-Mantener la información sincronizada y disponible desde cualquier dispositivo.
+A continuacion vamos a mostarr la funcionalidad de la aplicacion:
 
- Tecnologías utilizadas
+https://drive.google.com/file/d/1FlEFFXTdOWO4sn3F7atMVBEyR2ZQhSjv/view?usp=drive_link
 
-Kotlin – Lenguaje principal de desarrollo.
 
-Jetpack Compose – UI declarativa para Android.
+Para ejecutar la aplicacion se debe descargar la apk adjunta en el classroom o descargar directamente por este link y ejecutar en android 
+https://drive.google.com/file/d/1NozrgsIZBP1HBhkwNi83A01zkEKOr8O_/view?usp=drive_link
 
-Firebase Authentication – Registro, inicio de sesión y validación de usuarios.
 
-Firebase Firestore / Realtime Database – Almacenamiento de datos financieros.
-
-Android Studio – Entorno de desarrollo.
