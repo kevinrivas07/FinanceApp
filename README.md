@@ -43,7 +43,7 @@ Eliminar registros que el usuario ya no desee mantener.
 
 Mantener la información sincronizada y disponible desde cualquier dispositivo.
 
-🛠️ Tecnologías utilizadas
+ Tecnologías utilizadas
 
 Kotlin – Lenguaje principal de desarrollo.
 
