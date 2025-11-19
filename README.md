@@ -1,4 +1,4 @@
-# FinanceApp
+# FinanceApp Buscar codigo en la master 
 FinanceApp
 
 FinanceApp es una aplicación móvil desarrollada en Kotlin utilizando Jetpack Compose como framework de interfaz gráfica. Su propósito es ayudar a los usuarios a gestionar sus ingresos y gastos, ofreciendo una manera sencilla y segura de llevar el control de sus finanzas personales.
